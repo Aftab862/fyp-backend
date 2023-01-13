@@ -17,9 +17,17 @@ connectDB();
 const HttpError = require("./models/http-error");
 
 const app = express();
+var morgan = require('morgan')
 
 // To resolve CORS issue
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true,
+}));
+
+
+
+
 
 // content-type:json
 app.use(bodyParser.json());
@@ -29,16 +37,16 @@ app.use("/api/user", usersRoutes);
 
 // employee
 app.use("/api/employee", employeesRoutes);
-
+app.use(morgan('combined'))
 //Salary Routes
 // app.use("/api/salary", salaryRoutes);
 
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static("Frontend/build"));
-  app.get("*", (req, res) =>
-    res.sendFile(path.resolve(__dirname, "Frontend", "build", "index.html"))
-  );
-}
+// if (process.env.NODE_ENV === "production") {
+//   app.use(express.static("Frontend/build"));
+//   app.get("*", (req, res) =>
+//     res.sendFile(path.resolve(__dirname, "Frontend", "build", "index.html"))
+//   );
+// }
 
 app.use((req, res, next) => {
   const error = new HttpError("Could not find this route.", 404);

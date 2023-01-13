@@ -32,11 +32,11 @@ const login = async (req, res, next) => {
     }
   }
 
-  console.log("employee", existingEmployee);
+  // console.log("employee", existingEmployee);
 
   res.status(200).send({
-    id: existingUser._id,
-    employeeId: existingUser.role === "employee" ? existingEmployee._id : null,
+    id: existingUser.role === "employee" ? existingEmployee._id : existingUser._id,
+    // employeeId: existingUser.role === "employee" ? existingEmployee._id : null,
     email: existingUser.email,
     name: existingUser.name,
     role: existingUser.role,

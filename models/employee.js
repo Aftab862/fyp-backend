@@ -16,6 +16,10 @@ const employeeSchema = new mongoose.Schema({
     designation: { type: String, required: true },
     category: { type: String, required: true },
     status: { type: String, required: true },
+    stg: { type: Number, required: true },
+    inc: { type: Number, required: true },
+    initpay: { type: Number, required: true },
+
   },
 
   salaries: [

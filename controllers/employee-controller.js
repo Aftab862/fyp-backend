@@ -189,7 +189,7 @@ const getEmployee = async (req, res, next) => {
 
 const addEmployee = async (req, res, next) => {
   const obj = req.body;
-
+console.log("req obj", obj)
   const employee = new Employee(obj);
   const createUser = new User({
     name: obj.basicInfo.name,
@@ -232,6 +232,9 @@ const addEmployee = async (req, res, next) => {
       designation: employee.basicInfo.designation,
       category: employee.basicInfo.category,
       status: employee.basicInfo.status,
+      stg: employee.basicInfo.stg,
+      increment: employee.basicInfo.inc,
+      initialpay: employee.basicInfo.initpay
     },
 
     salaries: employee.salaries,
@@ -365,6 +368,10 @@ const updateEmployee = async (req, res, next) => {
       designation: updatedEmployee.basicInfo.designation,
       category: updatedEmployee.basicInfo.category,
       status: updatedEmployee.basicInfo.status,
+      stg: updatedEmployee.basicInfo.stg,
+      increment: updatedEmployee.basicInfo.inc,
+      initialpay: updatedEmployee.basicInfo.initpay
+
     },
 
     salaries: updatedEmployee.salaries,
@@ -475,6 +482,10 @@ const verifyEmployee = async (req, res, next) => {
       designation: updatingEmployee.basicInfo.designation,
       category: updatingEmployee.basicInfo.category,
       status: updatingEmployee.basicInfo.status,
+      stg: updatingEmployee.basicInfo.stg,
+      increment: updatingEmployee.basicInfo.inc,
+      initialpay: updatingEmployee.basicInfo.initpay
+
     },
 
     salaries: updatingEmployee.salaries,

@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minLength: 6 },
   name: { type: String, required: false },
   role: { type: String, required: true },
+}, {
+  timestamps: true
 });
 
 userSchema.plugin(uniqueValidator);

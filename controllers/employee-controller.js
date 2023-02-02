@@ -3,8 +3,10 @@ const HttpError = require("../models/http-error");
 const User = require("../models/user");
 const mongoose = require("mongoose");
 const moment = require("moment");
+const salariesRecord = require("../models/payslip");
 
 const getEmployees = async (req, res, next) => {
+  console.log("called")
   let employees;
   try {
     employees = await Employee.find();
@@ -15,6 +17,7 @@ const getEmployees = async (req, res, next) => {
     );
     return next(er);
   }
+
   res.status(200).json({
     results: employees.map((employee) => ({
       id: employee._id,
@@ -32,6 +35,11 @@ const getEmployees = async (req, res, next) => {
         designation: employee.basicInfo.designation,
         category: employee.basicInfo.category,
         status: employee.basicInfo.status,
+        stg: employee.basicInfo.stg,
+        increment: employee.basicInfo.increment,
+        initialpay: employee.basicInfo.initialpay
+
+
       },
 
       salaries: employee.salaries,
@@ -126,6 +134,9 @@ const getEmployee = async (req, res, next) => {
       designation: employee.basicInfo.designation,
       category: employee.basicInfo.category,
       status: employee.basicInfo.status,
+      stg: employee.basicInfo.stg,
+      increment: employee.basicInfo.increment,
+      initialpay: employee.basicInfo.initialpay
     },
 
     salaries: employee.salaries,
@@ -185,11 +196,13 @@ const getEmployee = async (req, res, next) => {
       netPayable: employee.currentPay.netPayable,
     },
   });
+
 };
 
 const addEmployee = async (req, res, next) => {
   const obj = req.body;
-console.log("req obj", obj)
+
+  console.log("req obj", obj)
   const employee = new Employee(obj);
   const createUser = new User({
     name: obj.basicInfo.name,
@@ -342,7 +355,7 @@ const updateEmployee = async (req, res, next) => {
   }
 
   const updatedEmployee = req.body;
-
+  console.log(req.body)
   try {
     await Employee.updateOne({ _id: employeeId }, updatedEmployee);
   } catch (error) {
@@ -369,8 +382,8 @@ const updateEmployee = async (req, res, next) => {
       category: updatedEmployee.basicInfo.category,
       status: updatedEmployee.basicInfo.status,
       stg: updatedEmployee.basicInfo.stg,
-      increment: updatedEmployee.basicInfo.inc,
-      initialpay: updatedEmployee.basicInfo.initpay
+      increment: updatedEmployee.basicInfo.increment,
+      initialpay: updatedEmployee.basicInfo.initialpay
 
     },
 
@@ -560,6 +573,7 @@ const verifyEmployee = async (req, res, next) => {
 
 
 
+
 const getStats = async (req, res, next) => {
   let totalEmployees = 0
   let pensioners = 0;
@@ -588,6 +602,215 @@ const getStats = async (req, res, next) => {
 
 
 
+const comitSalaries = async (req, res) => {
+  const { Data } = req.body
+  const updatedDataArray = Data.map(data => {
+    return {
+      updateOne: {
+        filter: { _id: mongoose.Types.ObjectId(data.id) },
+        update: { $push: { salaries: data.Salary } }
+      }
+    };
+  });
+  try {
+    await Employee.bulkWrite(updatedDataArray);
+    let result = await salariesRecord(req.body);
+    const response = await result.save();
+    res.status(200).json({ message: "Record Committed", response })
+  } catch (error) {
+    res.status(400).json(error)
+  }
+
+  // await Employee.findOneAndUpdate(
+  //   { _id: mongoose.Types.ObjectId("629af36c9674e0d31dd25df5") },
+  //   { $push: { salaries: sal[1] } },
+  //   { new: true }
+  // )
+  //   .then(result => {
+  //     console.log("result", result);
+  //   })
+  //   .catch(error => {
+  //     console.log("error", error);
+  //   });
+
+  // const resp = await salariesRecord.find({ _id: mongoose.Types.ObjectId("63da4ca9507b75545ff56463") })
+  // console.log("find", resp)
+  // salariesRecord.updateMany(
+  //   { _id: { $in: ids } },
+  //   { $set: {} }
+  // )
+  //   .then(result => {
+  //     console.log(result);
+  //   })
+  //   .catch(error => {
+  //     console.log(error);
+  //   });
+
+  // console.log("ids", ids)
+
+}
+
+
+const updateAllEmployee = async (req, res, next) => {
+  // let employee;
+  const { rangeFrom, rangeTo, allowancevalue, allowanceType } = req.body
+
+  // try {
+  //   await Employee.updateMany(
+  //     { "basicInfo.department": department },
+  //     { $set: { [`currentPay.amolument.${allowanceType}`]: allowancevalue } }
+  //   )
+  //   res.status(200).json("Data successfully Updated")
+
+  // } catch (error) {
+  //   res.status(400).json(error)
+  // }
+
+  try {
+    await Employee.updateMany({ "basicInfo.scale": { $lte: rangeTo, $gte: rangeFrom } },
+      { $set: { [`currentPay.amolument.${allowanceType}`]: allowancevalue } }
+    )
+    res.status(200).json("Data successfully Updated")
+
+  } catch (error) {
+    res.status(400).json(error)
+  }
+
+
+  // { multi: true },
+
+  // function (err, affectedRows) {
+  //   if (err) {
+  //     console.log(err);
+  //   } else {
+  //     console.log(`Successfully updated ${affectedRows} documents.`);
+  //   }
+  // }
+
+
+  // console.log("length:", result.length)
+  // res.send(result)
+  // } catch (error) {
+  //   const err = new HttpError(
+  //     "somthing went wrong, could not delete employee",
+  //     500
+  //   );
+  //   return next(err);
+  // }
+  // if (!employee) {
+  //   const err = new HttpError("could not find employee", 500);
+  //   return next(err);
+  // }
+
+  // const updatedEmployee = req.body;
+  // console.log(req.body)
+  // try {
+  //   await Employee.update({ field: { $in: ['value1', 'value2'] } },);
+  // } catch (error) {
+  //   const err = new HttpError(
+  //     "something went wrong,could not update employee",
+  //     500
+  //   );
+  //   return next(err);
+  // }
+  // res.status(200).json({
+  //   id: updatedEmployee._id,
+  //   basicInfo: {
+  //     name: updatedEmployee.basicInfo.name,
+  //     email: updatedEmployee.basicInfo.email,
+  //     password: updatedEmployee.basicInfo.password,
+  //     cnic: updatedEmployee.basicInfo.cnic,
+  //     pageNo: updatedEmployee.basicInfo.pageNo,
+  //     accountNo: updatedEmployee.basicInfo.accountNo,
+  //     department: updatedEmployee.basicInfo.department,
+  //     scale: updatedEmployee.basicInfo.scale,
+  //     experience: updatedEmployee.basicInfo.experience,
+  //     type: updatedEmployee.basicInfo.type,
+  //     designation: updatedEmployee.basicInfo.designation,
+  //     category: updatedEmployee.basicInfo.category,
+  //     status: updatedEmployee.basicInfo.status,
+  //     stg: updatedEmployee.basicInfo.stg,
+  //     increment: updatedEmployee.basicInfo.increment,
+  //     initialpay: updatedEmployee.basicInfo.initialpay
+
+  //   },
+
+  //   salaries: updatedEmployee.salaries,
+
+  //   currentPay: {
+  //     date: moment().format("DD-MM-YYY"),
+  //     verified: updatedEmployee.currentPay.verified,
+  //     amolument: {
+  //       basicPay: updatedEmployee.currentPay.amolument.basicPay,
+  //       nonPracticingAllowance:
+  //         updatedEmployee.currentPay.amolument.nonPracticingAllowance,
+  //       specialHealthCareAllowance:
+  //         updatedEmployee.currentPay.amolument.specialHealthCareAllowance,
+  //       healthProfnlAllowance:
+  //         updatedEmployee.currentPay.amolument.healthProfnlAllowance,
+  //       houseRent: updatedEmployee.currentPay.amolument.houseRent,
+  //       conPetAllowance: updatedEmployee.currentPay.amolument.conPetAllowance,
+  //       qualificationAllowance:
+  //         updatedEmployee.currentPay.amolument.qualificationAllowance,
+  //       entertainmentAllowance:
+  //         updatedEmployee.currentPay.amolument.entertainmentAllownace,
+  //       personalAllowance:
+  //         updatedEmployee.currentPay.amolument.personalAllowance,
+  //       tTAllowance: updatedEmployee.currentPay.amolument.tTAllowance,
+  //       medicalAllowance: updatedEmployee.currentPay.amolument.medicalAllowance,
+  //       socialSecuirtyBenefit:
+  //         updatedEmployee.currentPay.amolument.socialSecuirtyBenefit,
+  //       seniorPostAllowance:
+  //         updatedEmployee.currentPay.amolument.seniorPostAllowance,
+  //       chairmanAllowance:
+  //         updatedEmployee.currentPay.amolument.chairmanAllowance,
+  //       rTWardenAllowance:
+  //         updatedEmployee.currentPay.amolument.rTWardenAllowance,
+  //       specialReliefAllowance:
+  //         updatedEmployee.currentPay.amolument.specialReliefAllowance,
+  //       entertainment: updatedEmployee.currentPay.amolument.entertainment,
+  //     },
+  //     deductions: {
+  //       incomeTax: updatedEmployee.currentPay.deductions.incomeTax,
+  //       gPFSubscription: updatedEmployee.currentPay.deductions.gPFSubscription,
+  //       recGPF: updatedEmployee.currentPay.deductions.recGPF,
+  //       houseRentR: updatedEmployee.currentPay.deductions.houseRentR,
+  //       waterCharges: updatedEmployee.currentPay.deductions.waterCharges,
+  //       shortDays: updatedEmployee.currentPay.deductions.shortDays,
+  //       convRecovery: updatedEmployee.currentPay.deductions.convRecovery,
+  //       uniTTAllowance: updatedEmployee.currentPay.deductions.uniTTAllowance,
+  //       tSAFund: updatedEmployee.currentPay.deductions.tSAFund,
+  //       benevolentFund: updatedEmployee.currentPay.deductions.benevolentFund,
+  //       groupInsurance: updatedEmployee.currentPay.deductions.groupInsurance,
+  //       eidAdvance: updatedEmployee.currentPay.deductions.eidAdvance,
+  //       busCharges: updatedEmployee.currentPay.deductions.busCharges,
+  //       speciialIncentive:
+  //         updatedEmployee.currentPay.deductions.speciialIncentive,
+  //       conveyanceAllowance:
+  //         updatedEmployee.currentPay.deductions.conveyanceAllowance,
+  //       integratedAllowance:
+  //         updatedEmployee.currentPay.deductions.integratedAllowance,
+  //       disableAllowance:
+  //         updatedEmployee.currentPay.deductions.disableAllowance,
+  //       sSB: updatedEmployee.currentPay.deductions.sSB,
+  //       gIP: updatedEmployee.currentPay.deductions.gIP,
+  //       recEidAdvance: updatedEmployee.currentPay.deductions.recEidAdvance,
+  //       accomadationCharges:
+  //         updatedEmployee.currentPay.deductions.accomadationCharges,
+  //     },
+  //     netPayable: updatedEmployee.currentPay.netPayable,
+  //   },
+  // });
+};
+
+
+
+
+
+
+
+
+
 module.exports = {
   addEmployee,
   getEmployees,
@@ -595,5 +818,7 @@ module.exports = {
   updateEmployee,
   getEmployee,
   verifyEmployee,
-  getStats
+  getStats,
+  updateAllEmployee,
+  comitSalaries
 };

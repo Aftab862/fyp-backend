@@ -3,8 +3,15 @@ const auth = require("../Middleware/auth");
 const employeeController = require("../controllers/employee-controller");
 
 const router = express.Router();
+
+// Save and Commit salary
+router.get("/getSalaries",  employeeController.getSalaries);
+
 // Save and Commit salary
 router.post("/comit", auth, employeeController.comitSalaries);
+
+
+
 //Update Increments in Bulk 
 router.patch("/updateall", auth, employeeController.updateAllEmployee);
 

@@ -6,7 +6,7 @@ const moment = require("moment");
 const salariesRecord = require("../models/payslip");
 
 const getEmployees = async (req, res, next) => {
-  console.log("called")
+  // console.log("called")
   let employees;
   try {
     employees = await Employee.find();
@@ -202,7 +202,7 @@ const getEmployee = async (req, res, next) => {
 const addEmployee = async (req, res, next) => {
   const obj = req.body;
 
-  console.log("req obj", obj)
+  // console.log("req obj", obj)
   const employee = new Employee(obj);
   const createUser = new User({
     name: obj.basicInfo.name,
@@ -355,7 +355,7 @@ const updateEmployee = async (req, res, next) => {
   }
 
   const updatedEmployee = req.body;
-  console.log(req.body)
+  // console.log(req.body)
   try {
     await Employee.updateOne({ _id: employeeId }, updatedEmployee);
   } catch (error) {
@@ -604,6 +604,9 @@ const getStats = async (req, res, next) => {
 
 const comitSalaries = async (req, res) => {
   const { Data } = req.body
+  // console.log(req.body)
+  // console.log(JSON.stringify(Data))
+
   const updatedDataArray = Data.map(data => {
     return {
       updateOne: {
@@ -653,7 +656,7 @@ const comitSalaries = async (req, res) => {
 
 const updateAllEmployee = async (req, res, next) => {
   // let employee;
-  const { rangeFrom, rangeTo, allowancevalue, allowanceType } = req.body
+  const { rangeFrom, rangeTo, allowancevalue, allowanceType, year } = req.body
 
   // try {
   //   await Employee.updateMany(
@@ -666,15 +669,75 @@ const updateAllEmployee = async (req, res, next) => {
   //   res.status(400).json(error)
   // }
 
-  try {
-    await Employee.updateMany({ "basicInfo.scale": { $lte: rangeTo, $gte: rangeFrom } },
-      { $set: { [`currentPay.amolument.${allowanceType}`]: allowancevalue } }
-    )
-    res.status(200).json("Data successfully Updated")
 
-  } catch (error) {
-    res.status(400).json(error)
-  }
+  // if (allowanceType == 'basicPay') {
+
+  let result = await Employee.find({ "basicInfo.scale": { $lte: rangeTo, $gte: rangeFrom } });
+  let Updatedata = [];
+  let found = false;
+  result.forEach((employee) => {
+    employee.salaries.some((salary) => {
+      if (salary.year == year) {
+        let percentValue = allowancevalue * (salary?.Emoulments?.[allowanceType]) / 100
+        let obj = {};
+        obj.id = employee.id
+        obj.name = employee.basicInfo.name;
+        obj.scale = employee.basicInfo.scale;
+        obj.value = percentValue + salary?.Emoulments?.[allowanceType];
+        console.log("salary", salary?.Emoulments?.[allowanceType])
+        // obj.year = year;
+        Updatedata.push(obj);
+        found = true; // set the flag to indicate a match was found
+        return true; // stop searching for salaries
+      }
+    });
+    if (found) {
+      return; // stop searching for employees
+    }
+  });
+
+  // res.send(Updatedata)
+  console.log("data", Updatedata)
+
+  Updatedata.forEach(data => {
+    Employee.updateOne(
+      { "_id": mongoose.Types.ObjectId(data.id) }, // filter by id
+      { $set: { [`currentPay.amolument.${allowanceType}`]: data.value } }, // set new values
+      function (err, result) {
+        if (err) throw err;
+        console.log(`${result.modifiedCount} document(s) updated.`);
+      
+      }
+    );
+
+  });
+
+  res.send("data Updated")
+
+
+
+  // let resp = await Employee.insertMany(data, function (err, result) {
+  //   if (err) throw err;
+  //   console.log("Number of documents inserted: " + result.insertedCount);
+  //   client.close();
+  // });
+
+  // }
+  // else {
+  //   try {
+  //     // await Employee.updateMany({ "basicInfo.scale": { $lte: rangeTo, $gte: rangeFrom } },
+  //     //   { $set: { [`currentPay.amolument.${allowanceType}`]: allowancevalue } }
+  //     // )
+  //     res.status(200).json("Data successfully Updated")
+  //   } catch (error) {
+  //     res.status(400).json(error)
+  //   }
+
+
+
+  // }
+
+
 
 
   // { multi: true },
@@ -805,14 +868,38 @@ const updateAllEmployee = async (req, res, next) => {
 
 
 
+const getSalaries = async (req, res, next) => {
 
+  let employee;
+  try {
+    employee = await Employee.findById({ _id: req.query.id });
+  } catch (error) {
+    const er = new HttpError(
+      "Not Found",
+      500
+    );
+    return next(er);
+  }
 
+  let arry = []
+  for (let a = 0; a < employee.salaries.length; a++) {
 
+    if (req.query.year == employee.salaries[a]?.year) {
+      let obj = {}
+      obj.salary = employee?.salaries[a],
+        obj.basicInfo = employee.basicInfo
+      arry.push(obj)
+    }
+  }
+  res.status(200).json(arry)
+
+}
 
 
 
 module.exports = {
   addEmployee,
+  getSalaries,
   getEmployees,
   deleteEmployee,
   updateEmployee,

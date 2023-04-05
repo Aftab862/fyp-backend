@@ -36,16 +36,14 @@ const getEmployees = async (req, res, next) => {
         category: employee.basicInfo.category,
         status: employee.basicInfo.status,
         stg: employee.basicInfo.stg,
-        increment: employee.basicInfo.increment,
-        initialpay: employee.basicInfo.initialpay
-
-
+        increment: employee.basicInfo.inc,
+        initialpay: employee.basicInfo.initpay
       },
 
       salaries: employee.salaries,
 
       currentPay: {
-        date: employee.currentPay.date,
+        date: moment().format("DD-MM-YYY"),
         verified: employee.currentPay.verified,
         amolument: {
           basicPay: employee.currentPay.amolument.basicPay,
@@ -59,20 +57,29 @@ const getEmployees = async (req, res, next) => {
           conPetAllowance: employee.currentPay.amolument.conPetAllowance,
           qualificationAllowance:
             employee.currentPay.amolument.qualificationAllowance,
-          entertainmentAllowance:
-            employee.currentPay.amolument.entertainmentAllownace,
           personalAllowance: employee.currentPay.amolument.personalAllowance,
           tTAllowance: employee.currentPay.amolument.tTAllowance,
           medicalAllowance: employee.currentPay.amolument.medicalAllowance,
           socialSecuirtyBenefit:
             employee.currentPay.amolument.socialSecuirtyBenefit,
-          seniorPostAllowance:
-            employee.currentPay.amolument.seniorPostAllowance,
+          seniorPostAllowance: employee.currentPay.amolument.seniorPostAllowance,
           chairmanAllowance: employee.currentPay.amolument.chairmanAllowance,
           rTWardenAllowance: employee.currentPay.amolument.rTWardenAllowance,
           specialReliefAllowance:
             employee.currentPay.amolument.specialReliefAllowance,
           entertainment: employee.currentPay.amolument.entertainment,
+
+
+          conveyanceAllowance: employee.currentPay.amolument.conveyanceAllowance,
+          darenessAllowance: employee.currentPay.amolument.darenessAllowance,
+          adhocReliefAllowance: employee.currentPay.amolument.adhocReliefAllowance,
+          disableAllowance: employee.currentPay.amolument.disableAllowance,
+          extraAllowance: employee.currentPay.amolument.extraAllowance,
+          specialIncentiveAllowance: employee.currentPay.amolument.specialIncentiveAllowance,
+          ssbAllowance: employee.currentPay.amolument.ssbAllowance,
+          totalAmoluments: employee.currentPay.amolument.totalAmoluments,
+          uniTeachingAllowance: employee.currentPay.amolument.uniTeachingAllowance
+
         },
         deductions: {
           incomeTax: employee.currentPay.deductions.incomeTax,
@@ -82,23 +89,28 @@ const getEmployees = async (req, res, next) => {
           waterCharges: employee.currentPay.deductions.waterCharges,
           shortDays: employee.currentPay.deductions.shortDays,
           convRecovery: employee.currentPay.deductions.convRecovery,
-          uniTTAllowance: employee.currentPay.deductions.uniTTAllowance,
+          // uniTTAllowance: employee.currentPay.deductions.uniTTAllowance,
           tSAFund: employee.currentPay.deductions.tSAFund,
           benevolentFund: employee.currentPay.deductions.benevolentFund,
           groupInsurance: employee.currentPay.deductions.groupInsurance,
           eidAdvance: employee.currentPay.deductions.eidAdvance,
           busCharges: employee.currentPay.deductions.busCharges,
-          speciialIncentive: employee.currentPay.deductions.speciialIncentive,
-          conveyanceAllowance:
-            employee.currentPay.deductions.conveyanceAllowance,
-          integratedAllowance:
-            employee.currentPay.deductions.integratedAllowance,
-          disableAllowance: employee.currentPay.deductions.disableAllowance,
-          sSB: employee.currentPay.deductions.sSB,
+          //speciialIncentive: employee.currentPay.deductions.speciialIncentive,
+          // conveyanceAllowance: employee.currentPay.deductions.conveyanceAllowance,
+          //integratedAllowance: employee.currentPay.deductions.integratedAllowance,
+          //disableAllowance: employee.currentPay.deductions.disableAllowance,
+          //sSB: employee.currentPay.deductions.sSB,
           gIP: employee.currentPay.deductions.gIP,
-          recEidAdvance: employee.currentPay.deductions.recEidAdvance,
-          accomadationCharges:
-            employee.currentPay.deductions.accomadationCharges,
+          //recEidAdvance: employee.currentPay.deductions.recEidAdvance,
+          accomadationCharges: employee.currentPay.deductions.accomadationCharges,
+          carScooterAdvance: employee.currentPay.deductions.carScooterAdvance,
+          electricityCharges: employee.currentPay.deductions.electricityCharges,
+          extraCausalLeaves: employee.currentPay.deductions.extraCausalLeaves,
+          houseBuildingAdvance: employee.currentPay.deductions.houseBuildingAdvance,
+          otherCharges: employee.currentPay.deductions.otherCharges,
+          totalDeductions: employee.currentPay.deductions.totalDeductions,
+          tradeTax: employee.currentPay.deductions.tradeTax
+
         },
         netPayable: employee.currentPay.netPayable,
       },
@@ -108,7 +120,7 @@ const getEmployees = async (req, res, next) => {
 
 const getEmployee = async (req, res, next) => {
   const employeeId = req.params.id;
-  let employee;
+  var employee;
   try {
     employee = await Employee.findById({ _id: employeeId });
   } catch (error) {
@@ -118,6 +130,7 @@ const getEmployee = async (req, res, next) => {
     );
     return next(er);
   }
+  console.log("employee data is ", employee)
   res.status(200).json({
     id: employee._id,
     basicInfo: {
@@ -135,14 +148,14 @@ const getEmployee = async (req, res, next) => {
       category: employee.basicInfo.category,
       status: employee.basicInfo.status,
       stg: employee.basicInfo.stg,
-      increment: employee.basicInfo.increment,
-      initialpay: employee.basicInfo.initialpay
+      increment: employee.basicInfo.inc,
+      initialpay: employee.basicInfo.initpay
     },
 
     salaries: employee.salaries,
 
     currentPay: {
-      date: employee.currentPay.date,
+      date: moment().format("DD-MM-YYY"),
       verified: employee.currentPay.verified,
       amolument: {
         basicPay: employee.currentPay.amolument.basicPay,
@@ -156,8 +169,6 @@ const getEmployee = async (req, res, next) => {
         conPetAllowance: employee.currentPay.amolument.conPetAllowance,
         qualificationAllowance:
           employee.currentPay.amolument.qualificationAllowance,
-        entertainmentAllowance:
-          employee.currentPay.amolument.entertainmentAllownace,
         personalAllowance: employee.currentPay.amolument.personalAllowance,
         tTAllowance: employee.currentPay.amolument.tTAllowance,
         medicalAllowance: employee.currentPay.amolument.medicalAllowance,
@@ -169,6 +180,18 @@ const getEmployee = async (req, res, next) => {
         specialReliefAllowance:
           employee.currentPay.amolument.specialReliefAllowance,
         entertainment: employee.currentPay.amolument.entertainment,
+
+
+        conveyanceAllowance: employee.currentPay.amolument.conveyanceAllowance,
+        darenessAllowance: employee.currentPay.amolument.darenessAllowance,
+        adhocReliefAllowance: employee.currentPay.amolument.adhocReliefAllowance,
+        disableAllowance: employee.currentPay.amolument.disableAllowance,
+        extraAllowance: employee.currentPay.amolument.extraAllowance,
+        specialIncentiveAllowance: employee.currentPay.amolument.specialIncentiveAllowance,
+        ssbAllowance: employee.currentPay.amolument.ssbAllowance,
+        totalAmoluments: employee.currentPay.amolument.totalAmoluments,
+        uniTeachingAllowance: employee.currentPay.amolument.uniTeachingAllowance
+
       },
       deductions: {
         incomeTax: employee.currentPay.deductions.incomeTax,
@@ -178,20 +201,28 @@ const getEmployee = async (req, res, next) => {
         waterCharges: employee.currentPay.deductions.waterCharges,
         shortDays: employee.currentPay.deductions.shortDays,
         convRecovery: employee.currentPay.deductions.convRecovery,
-        uniTTAllowance: employee.currentPay.deductions.uniTTAllowance,
+        // uniTTAllowance: employee.currentPay.deductions.uniTTAllowance,
         tSAFund: employee.currentPay.deductions.tSAFund,
         benevolentFund: employee.currentPay.deductions.benevolentFund,
         groupInsurance: employee.currentPay.deductions.groupInsurance,
         eidAdvance: employee.currentPay.deductions.eidAdvance,
         busCharges: employee.currentPay.deductions.busCharges,
-        speciialIncentive: employee.currentPay.deductions.speciialIncentive,
-        conveyanceAllowance: employee.currentPay.deductions.conveyanceAllowance,
-        integratedAllowance: employee.currentPay.deductions.integratedAllowance,
-        disableAllowance: employee.currentPay.deductions.disableAllowance,
-        sSB: employee.currentPay.deductions.sSB,
+        //speciialIncentive: employee.currentPay.deductions.speciialIncentive,
+        // conveyanceAllowance: employee.currentPay.deductions.conveyanceAllowance,
+        //integratedAllowance: employee.currentPay.deductions.integratedAllowance,
+        //disableAllowance: employee.currentPay.deductions.disableAllowance,
+        //sSB: employee.currentPay.deductions.sSB,
         gIP: employee.currentPay.deductions.gIP,
-        recEidAdvance: employee.currentPay.deductions.recEidAdvance,
+        //recEidAdvance: employee.currentPay.deductions.recEidAdvance,
         accomadationCharges: employee.currentPay.deductions.accomadationCharges,
+        carScooterAdvance: employee.currentPay.deductions.carScooterAdvance,
+        electricityCharges: employee.currentPay.deductions.electricityCharges,
+        extraCausalLeaves: employee.currentPay.deductions.extraCausalLeaves,
+        houseBuildingAdvance: employee.currentPay.deductions.houseBuildingAdvance,
+        otherCharges: employee.currentPay.deductions.otherCharges,
+        totalDeductions: employee.currentPay.deductions.totalDeductions,
+        tradeTax: employee.currentPay.deductions.tradeTax
+
       },
       netPayable: employee.currentPay.netPayable,
     },
@@ -202,7 +233,7 @@ const getEmployee = async (req, res, next) => {
 const addEmployee = async (req, res, next) => {
   const obj = req.body;
 
-  // console.log("req obj", obj)
+  console.log("req obj", obj)
   const employee = new Employee(obj);
   const createUser = new User({
     name: obj.basicInfo.name,
@@ -267,8 +298,6 @@ const addEmployee = async (req, res, next) => {
         conPetAllowance: employee.currentPay.amolument.conPetAllowance,
         qualificationAllowance:
           employee.currentPay.amolument.qualificationAllowance,
-        entertainmentAllowance:
-          employee.currentPay.amolument.entertainmentAllownace,
         personalAllowance: employee.currentPay.amolument.personalAllowance,
         tTAllowance: employee.currentPay.amolument.tTAllowance,
         medicalAllowance: employee.currentPay.amolument.medicalAllowance,
@@ -280,6 +309,18 @@ const addEmployee = async (req, res, next) => {
         specialReliefAllowance:
           employee.currentPay.amolument.specialReliefAllowance,
         entertainment: employee.currentPay.amolument.entertainment,
+
+
+        conveyanceAllowance: employee.currentPay.amolument.conveyanceAllowance,
+        darenessAllowance: employee.currentPay.amolument.darenessAllowance,
+        adhocReliefAllowance: employee.currentPay.amolument.adhocReliefAllowance,
+        disableAllowance: employee.currentPay.amolument.disableAllowance,
+        extraAllowance: employee.currentPay.amolument.extraAllowance,
+        specialIncentiveAllowance: employee.currentPay.amolument.specialIncentiveAllowance,
+        ssbAllowance: employee.currentPay.amolument.ssbAllowance,
+        totalAmoluments: employee.currentPay.amolument.totalAmoluments,
+        uniTeachingAllowance: employee.currentPay.amolument.uniTeachingAllowance
+
       },
       deductions: {
         incomeTax: employee.currentPay.deductions.incomeTax,
@@ -289,20 +330,28 @@ const addEmployee = async (req, res, next) => {
         waterCharges: employee.currentPay.deductions.waterCharges,
         shortDays: employee.currentPay.deductions.shortDays,
         convRecovery: employee.currentPay.deductions.convRecovery,
-        uniTTAllowance: employee.currentPay.deductions.uniTTAllowance,
+        // uniTTAllowance: employee.currentPay.deductions.uniTTAllowance,
         tSAFund: employee.currentPay.deductions.tSAFund,
         benevolentFund: employee.currentPay.deductions.benevolentFund,
         groupInsurance: employee.currentPay.deductions.groupInsurance,
         eidAdvance: employee.currentPay.deductions.eidAdvance,
         busCharges: employee.currentPay.deductions.busCharges,
-        speciialIncentive: employee.currentPay.deductions.speciialIncentive,
-        conveyanceAllowance: employee.currentPay.deductions.conveyanceAllowance,
-        integratedAllowance: employee.currentPay.deductions.integratedAllowance,
-        disableAllowance: employee.currentPay.deductions.disableAllowance,
-        sSB: employee.currentPay.deductions.sSB,
+        //speciialIncentive: employee.currentPay.deductions.speciialIncentive,
+        // conveyanceAllowance: employee.currentPay.deductions.conveyanceAllowance,
+        //integratedAllowance: employee.currentPay.deductions.integratedAllowance,
+        //disableAllowance: employee.currentPay.deductions.disableAllowance,
+        //sSB: employee.currentPay.deductions.sSB,
         gIP: employee.currentPay.deductions.gIP,
-        recEidAdvance: employee.currentPay.deductions.recEidAdvance,
+        //recEidAdvance: employee.currentPay.deductions.recEidAdvance,
         accomadationCharges: employee.currentPay.deductions.accomadationCharges,
+        carScooterAdvance: employee.currentPay.deductions.carScooterAdvance,
+        electricityCharges: employee.currentPay.deductions.electricityCharges,
+        extraCausalLeaves: employee.currentPay.deductions.extraCausalLeaves,
+        houseBuildingAdvance: employee.currentPay.deductions.houseBuildingAdvance,
+        otherCharges: employee.currentPay.deductions.otherCharges,
+        totalDeductions: employee.currentPay.deductions.totalDeductions,
+        tradeTax: employee.currentPay.deductions.tradeTax
+
       },
       netPayable: employee.currentPay.netPayable,
     },
@@ -382,9 +431,8 @@ const updateEmployee = async (req, res, next) => {
       category: updatedEmployee.basicInfo.category,
       status: updatedEmployee.basicInfo.status,
       stg: updatedEmployee.basicInfo.stg,
-      increment: updatedEmployee.basicInfo.increment,
-      initialpay: updatedEmployee.basicInfo.initialpay
-
+      increment: updatedEmployee.basicInfo.inc,
+      initialpay: updatedEmployee.basicInfo.initpay
     },
 
     salaries: updatedEmployee.salaries,
@@ -404,23 +452,29 @@ const updateEmployee = async (req, res, next) => {
         conPetAllowance: updatedEmployee.currentPay.amolument.conPetAllowance,
         qualificationAllowance:
           updatedEmployee.currentPay.amolument.qualificationAllowance,
-        entertainmentAllowance:
-          updatedEmployee.currentPay.amolument.entertainmentAllownace,
-        personalAllowance:
-          updatedEmployee.currentPay.amolument.personalAllowance,
+        personalAllowance: updatedEmployee.currentPay.amolument.personalAllowance,
         tTAllowance: updatedEmployee.currentPay.amolument.tTAllowance,
         medicalAllowance: updatedEmployee.currentPay.amolument.medicalAllowance,
         socialSecuirtyBenefit:
           updatedEmployee.currentPay.amolument.socialSecuirtyBenefit,
-        seniorPostAllowance:
-          updatedEmployee.currentPay.amolument.seniorPostAllowance,
-        chairmanAllowance:
-          updatedEmployee.currentPay.amolument.chairmanAllowance,
-        rTWardenAllowance:
-          updatedEmployee.currentPay.amolument.rTWardenAllowance,
+        seniorPostAllowance: updatedEmployee.currentPay.amolument.seniorPostAllowance,
+        chairmanAllowance: updatedEmployee.currentPay.amolument.chairmanAllowance,
+        rTWardenAllowance: updatedEmployee.currentPay.amolument.rTWardenAllowance,
         specialReliefAllowance:
           updatedEmployee.currentPay.amolument.specialReliefAllowance,
         entertainment: updatedEmployee.currentPay.amolument.entertainment,
+
+
+        conveyanceAllowance: updatedEmployee.currentPay.amolument.conveyanceAllowance,
+        darenessAllowance: updatedEmployee.currentPay.amolument.darenessAllowance,
+        adhocReliefAllowance: updatedEmployee.currentPay.amolument.adhocReliefAllowance,
+        disableAllowance: updatedEmployee.currentPay.amolument.disableAllowance,
+        extraAllowance: updatedEmployee.currentPay.amolument.extraAllowance,
+        specialIncentiveAllowance: updatedEmployee.currentPay.amolument.specialIncentiveAllowance,
+        ssbAllowance: updatedEmployee.currentPay.amolument.ssbAllowance,
+        totalAmoluments: updatedEmployee.currentPay.amolument.totalAmoluments,
+        uniTeachingAllowance: updatedEmployee.currentPay.amolument.uniTeachingAllowance
+
       },
       deductions: {
         incomeTax: updatedEmployee.currentPay.deductions.incomeTax,
@@ -430,25 +484,28 @@ const updateEmployee = async (req, res, next) => {
         waterCharges: updatedEmployee.currentPay.deductions.waterCharges,
         shortDays: updatedEmployee.currentPay.deductions.shortDays,
         convRecovery: updatedEmployee.currentPay.deductions.convRecovery,
-        uniTTAllowance: updatedEmployee.currentPay.deductions.uniTTAllowance,
+        // uniTTAllowance: updatedEmployee.currentPay.deductions.uniTTAllowance,
         tSAFund: updatedEmployee.currentPay.deductions.tSAFund,
         benevolentFund: updatedEmployee.currentPay.deductions.benevolentFund,
         groupInsurance: updatedEmployee.currentPay.deductions.groupInsurance,
         eidAdvance: updatedEmployee.currentPay.deductions.eidAdvance,
         busCharges: updatedEmployee.currentPay.deductions.busCharges,
-        speciialIncentive:
-          updatedEmployee.currentPay.deductions.speciialIncentive,
-        conveyanceAllowance:
-          updatedEmployee.currentPay.deductions.conveyanceAllowance,
-        integratedAllowance:
-          updatedEmployee.currentPay.deductions.integratedAllowance,
-        disableAllowance:
-          updatedEmployee.currentPay.deductions.disableAllowance,
-        sSB: updatedEmployee.currentPay.deductions.sSB,
+        //speciialIncentive: updatedEmployee.currentPay.deductions.speciialIncentive,
+        // conveyanceAllowance: updatedEmployee.currentPay.deductions.conveyanceAllowance,
+        //integratedAllowance: updatedEmployee.currentPay.deductions.integratedAllowance,
+        //disableAllowance: updatedEmployee.currentPay.deductions.disableAllowance,
+        //sSB: updatedEmployee.currentPay.deductions.sSB,
         gIP: updatedEmployee.currentPay.deductions.gIP,
-        recEidAdvance: updatedEmployee.currentPay.deductions.recEidAdvance,
-        accomadationCharges:
-          updatedEmployee.currentPay.deductions.accomadationCharges,
+        //recEidAdvance: updatedEmployee.currentPay.deductions.recEidAdvance,
+        accomadationCharges: updatedEmployee.currentPay.deductions.accomadationCharges,
+        carScooterAdvance: updatedEmployee.currentPay.deductions.carScooterAdvance,
+        electricityCharges: updatedEmployee.currentPay.deductions.electricityCharges,
+        extraCausalLeaves: updatedEmployee.currentPay.deductions.extraCausalLeaves,
+        houseBuildingAdvance: updatedEmployee.currentPay.deductions.houseBuildingAdvance,
+        otherCharges: updatedEmployee.currentPay.deductions.otherCharges,
+        totalDeductions: updatedEmployee.currentPay.deductions.totalDeductions,
+        tradeTax: updatedEmployee.currentPay.deductions.tradeTax
+
       },
       netPayable: updatedEmployee.currentPay.netPayable,
     },
@@ -706,7 +763,7 @@ const updateAllEmployee = async (req, res, next) => {
       function (err, result) {
         if (err) throw err;
         console.log(`${result.modifiedCount} document(s) updated.`);
-      
+
       }
     );
 

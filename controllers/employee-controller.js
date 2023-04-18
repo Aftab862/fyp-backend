@@ -4,6 +4,8 @@ const User = require("../models/user");
 const mongoose = require("mongoose");
 const moment = require("moment");
 const salariesRecord = require("../models/payslip");
+const newAllowanceModal = require('../models/allowances');
+const { query } = require("express");
 
 const getEmployees = async (req, res, next) => {
   // console.log("called")
@@ -36,8 +38,8 @@ const getEmployees = async (req, res, next) => {
         category: employee.basicInfo.category,
         status: employee.basicInfo.status,
         stg: employee.basicInfo.stg,
-        increment: employee.basicInfo.inc,
-        initialpay: employee.basicInfo.initpay
+        increment: employee.basicInfo.increment,
+        initialpay: employee.basicInfo.initialpay
       },
 
       salaries: employee.salaries,
@@ -130,7 +132,7 @@ const getEmployee = async (req, res, next) => {
     );
     return next(er);
   }
-  console.log("employee data is ", employee)
+
   res.status(200).json({
     id: employee._id,
     basicInfo: {
@@ -148,8 +150,8 @@ const getEmployee = async (req, res, next) => {
       category: employee.basicInfo.category,
       status: employee.basicInfo.status,
       stg: employee.basicInfo.stg,
-      increment: employee.basicInfo.inc,
-      initialpay: employee.basicInfo.initpay
+      increment: employee.basicInfo.increment,
+      initialpay: employee.basicInfo.initialpay
     },
 
     salaries: employee.salaries,
@@ -277,8 +279,8 @@ const addEmployee = async (req, res, next) => {
       category: employee.basicInfo.category,
       status: employee.basicInfo.status,
       stg: employee.basicInfo.stg,
-      increment: employee.basicInfo.inc,
-      initialpay: employee.basicInfo.initpay
+      increment: employee.basicInfo.increment,
+      initialpay: employee.basicInfo.initialpay
     },
 
     salaries: employee.salaries,
@@ -939,7 +941,7 @@ const getSalaries = async (req, res, next) => {
   }
 
   let arry = []
-  for (let a = 0; a < employee.salaries.length; a++) {
+  for (let a = 0; a < employee?.salaries?.length; a++) {
 
     if (req.query.year == employee.salaries[a]?.year) {
       let obj = {}
@@ -952,7 +954,44 @@ const getSalaries = async (req, res, next) => {
 
 }
 
+const newAllowance = async (req, res, next) => {
+  const { allowanceName } = req.body.params;
+  // console.log(req.body,req.params,req.query)
+  try {
+    let Savedallownces = await newAllowanceModal.find()
+    let preSavedallownces = Savedallownces[0]?.Allowances
+    let found;
+    preSavedallownces.forEach(e => {
+      if (e == allowanceName) found = e;
+    })
+    if (found) res.status(400).json({ message: " Already Added" })
+    else {
+      preSavedallownces.push(allowanceName)
+      const update = { $set: { 'Allowances': preSavedallownces } };
+      await newAllowanceModal.updateOne(update)
+      // .then(result => {
+      // console.log(`${result.modifiedCount} document(s) updated`);
+      // })
+      res.status(200).json({ message: " New Allowance Added" })
 
+    }
+
+  } catch (error) {
+    console.log(error)
+  }
+
+}
+
+
+const getAllowances = async (req, res) => {
+  try {
+    let resp = await newAllowanceModal.find();
+    res.status(200).json(resp[0].Allowances)
+  } catch (error) {
+    res.status(200).json({ message: error.message })
+
+  }
+}
 
 module.exports = {
   addEmployee,
@@ -964,5 +1003,7 @@ module.exports = {
   verifyEmployee,
   getStats,
   updateAllEmployee,
-  comitSalaries
+  comitSalaries,
+  newAllowance,
+  getAllowances
 };

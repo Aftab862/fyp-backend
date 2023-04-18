@@ -4,8 +4,14 @@ const employeeController = require("../controllers/employee-controller");
 
 const router = express.Router();
 
+//
+router.route("/new-allowance")
+      .patch( employeeController.newAllowance)
+      .get( employeeController.getAllowances)
+// router.patch("/new-allowance",employeeController.newAllowance);
+
 // Save and Commit salary
-router.get("/getSalaries",  employeeController.getSalaries);
+router.get("/getSalaries", employeeController.getSalaries);
 
 // Save and Commit salary
 router.post("/comit", auth, employeeController.comitSalaries);

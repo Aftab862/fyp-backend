@@ -6,8 +6,8 @@ const router = express.Router();
 
 //
 router.route("/new-allowance")
-      .patch( employeeController.newAllowance)
-      .get( employeeController.getAllowances)
+      .patch(employeeController.newAllowance)
+      .get(employeeController.getAllowances)
 // router.patch("/new-allowance",employeeController.newAllowance);
 
 // Save and Commit salary
@@ -26,7 +26,9 @@ router.patch("/updateall", auth, employeeController.updateAllEmployee);
 router.get("/", auth, employeeController.getEmployees);
 
 
-router.get("/stats", employeeController.getStats);
+router.route("/stats")
+      .get(employeeController.getStats)
+      .delete(employeeController.deleteSalaryRecord)
 
 //Get Single Employee
 router.get("/:id", auth, employeeController.getEmployee);

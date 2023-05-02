@@ -638,25 +638,105 @@ const getStats = async (req, res, next) => {
   let pensioners = 0;
   let employees = []
   let totalSalaries = 0
+  let salariesRecords;
+  let records = [];
+  let previousrecord;
+  let graphData = [];
+  const { year } = req.query
+
   try {
     employees = await Employee.find({})
     pensioners = (await Employee.find({ "basicInfo.category": "Pensioner" }))?.length
-
     totalSalaries = employees.reduce((prev, next) => (prev + next?.currentPay?.netPayable ?? 0), 0)
+    totalEmployees = employees?.length;
 
+    if (year) {
+      // records = await salariesRecord.find(
+      //   { $expr: { $eq: [{ $year: "$createdAt" }, Number(year)] } }
+      // ).select("TotalIncome Date");
+      records = await salariesRecord.aggregate([
+        {
+          $match: {
+            $expr: {
+              $eq: [{ $year: { $dateFromString: { dateString: "$Date", format: "%d-%m-%Y" } } }, Number(year)]
+            }
+          }
+        }
+      ]);
 
-    totalEmployees = employees?.length
+      // for (let a = 0; a < salariesRecords?.length; a++) {
+      //   const [day, monthStr, yearstr] = salariesRecords[a]?.Date.split("-");
+      //   if (req.query.year == yearstr) {
+      //     let obj = {}
+      //     obj.TotalIncome = salariesRecords[a]?.TotalIncome
+      //     obj.Date = salariesRecords[a]?.Date
+      //     records.push(obj)
+      //   }
+      // }
+    } else {
+      // const today = new Date();
+      // const EightYearsAgo = new Date(today.getFullYear() - 8, today.getMonth(), today.getDate());
+      // records = await salariesRecord.find({ createdAt: { $gte: EightYearsAgo } }).select("TotalIncome Date")
 
+      // this will group by year from the last 8 years.
+
+      const today = new Date();
+      const EightYearsAgo = new Date(today.getFullYear() - 8, today.getMonth(), today.getDate());
+      records = await salariesRecord.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: EightYearsAgo
+            }
+          }
+        },
+        {
+          $addFields: {
+            dateObj: { $dateFromString: { dateString: "$Date", format: "%d-%m-%Y" } }
+          }
+        },
+        {
+          $group: {
+            _id: { $year: "$dateObj" },
+            totalIncome: { $sum: "$TotalIncome" }
+          }
+        },
+        {
+          $project: {
+            year: "$_id",
+            totalIncome: 1,
+            _id: 0
+          }
+        },
+        {
+          $sort: {
+            year: 1 // sort by year in ascending order
+          }
+        }
+      ]);
+    }
   } catch (error) {
-    const err = new HttpError("something went wrong", 500);
+    const err = new HttpError(error.message, 500);
     return next(err);
   }
-  res.status(200).json({
-    totalEmployees,
-    pensioners,
-    currentEmployees: totalEmployees - pensioners,
-    totalSalaries
-  });
+
+  // previousrecord = records[records.length - 1]
+  let totalcount = records.length
+  if (totalcount > 0) {
+    res.status(200).json({
+      totalEmployees,
+      pensioners,
+      currentEmployees: totalEmployees - pensioners,
+      totalSalaries,
+      // previousrecord,
+      totalcount,
+      records
+
+    });
+  }
+  else {
+    res.status(200).json({ message: "wrong response" })
+  }
 };
 
 
@@ -736,7 +816,7 @@ const updateAllEmployee = async (req, res, next) => {
   let found = false;
   result.forEach((employee) => {
     employee.salaries.some((salary) => {
-      if (salary.year == year) {
+      if (salary.year == year && salary.year != NaN) {
         let percentValue = allowancevalue * (salary?.Emoulments?.[allowanceType]) / 100
         let obj = {};
         obj.id = employee.id
@@ -993,6 +1073,21 @@ const getAllowances = async (req, res) => {
   }
 }
 
+const deleteSalaryRecord = async (req, res) => {
+
+  console.log("req", req.query)
+  salariesRecord.findByIdAndDelete(req.query.id, (err, result) => {
+    if (err) {
+      res.status(200).json({ message: "Something went wrong " }) // The deleted record will be logged here
+    } else {
+      res.status(200).json({ message: "Deleted Successfully ", result }) // The deleted record will be logged here
+    }
+  });
+
+
+
+}
+
 module.exports = {
   addEmployee,
   getSalaries,
@@ -1005,5 +1100,6 @@ module.exports = {
   updateAllEmployee,
   comitSalaries,
   newAllowance,
-  getAllowances
+  getAllowances,
+  deleteSalaryRecord
 };

@@ -5,7 +5,8 @@ const mongoose = require("mongoose");
 const moment = require("moment");
 const salariesRecord = require("../models/payslip");
 const newAllowanceModal = require('../models/allowances');
-const { query } = require("express");
+const nodemailer = require('nodemailer');
+
 
 const getEmployees = async (req, res, next) => {
   // console.log("called")
@@ -514,11 +515,59 @@ const updateEmployee = async (req, res, next) => {
   });
 };
 
+
+const Meeting = async (req, res) => {
+  const user = req.body.email
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: 'aftabahmad862862@gmail.com',
+      pass: 'pdrskldlshonpzfh',
+    },
+  });
+  const mailOptions = {
+    from: 'aftabahmad862862@gmail.com', // Replace with your Gmail email address
+    to: user, // Replace with the recipient's email address
+    subject: 'Join Video Call ', // Replace with the email subject
+    // text: 'Hello, /t/t/n Please verify your account Thanks.' // Replace with the email content
+    html:
+      '<p>Please Join meeting using this link </p>' +
+      'https://aftabahmad.daily.co/SAroom' +
+      '<>Link will expire After 2 hour </>'
+
+
+  };
+
+
+  try {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+      } else {
+        console.log('Email sent:', email, info.response);
+
+      }
+    });
+  } catch (error) {
+    const err = new HttpError("something went wrong", 500);
+    return next(err);
+  }
+  res.send("Email sent")
+
+}
+
+
+
 const verifyEmployee = async (req, res, next) => {
-  const employeeId = req.params.id;
+  const { value, id, email, token } = req.query;
+
   let employeeExists;
   try {
-    employeeExists = await Employee.findOne({ _id: employeeId });
+    employeeExists = await Employee.findOne({ _id: id });
   } catch (error) {
     const err = new HttpError("something went wrong", 500);
     return next(err);
@@ -530,10 +579,42 @@ const verifyEmployee = async (req, res, next) => {
   let updatingEmployee = employeeExists._doc;
   updatingEmployee = {
     ...updatingEmployee,
-    currentPay: { ...updatingEmployee.currentPay, verified: true },
+    currentPay: { ...updatingEmployee.currentPay, verified: value },
   };
+  //App Password pdrskldlshonpzfh
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: 'aftabahmad862862@gmail.com',
+      pass: 'pdrskldlshonpzfh',
+    },
+  });
+  const mailOptions = {
+    from: 'aftabahmad862862@gmail.com', // Replace with your Gmail email address
+    to: 'aftabahmad862862@gmail.com', // Replace with the recipient's email address
+    subject: 'Verification Required ', // Replace with the email subject
+    // text: 'Hello, /t/t/n Please verify your account Thanks.' // Replace with the email content
+    html:
+      '<p>Please verify you Account </p>' +
+      '<p> For verifition Please Contact with Admin </>' +
+      '<p>Please Reply to This Email to schedule meeting</p>' +
+      "<br>",
+
+  };
+
   try {
-    await Employee.updateOne({ _id: employeeId }, updatingEmployee);
+    await Employee.updateOne({ _id: id }, updatingEmployee);
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+      } else {
+        console.log('Email sent:', email, info.response);
+      }
+    });
   } catch (error) {
     const err = new HttpError("something went wrong", 500);
     return next(err);
@@ -796,35 +877,18 @@ const comitSalaries = async (req, res) => {
 const updateAllEmployee = async (req, res, next) => {
   // let employee;
   const { rangeFrom, rangeTo, allowancevalue, allowanceType, year } = req.body
-
-  // try {
-  //   await Employee.updateMany(
-  //     { "basicInfo.department": department },
-  //     { $set: { [`currentPay.amolument.${allowanceType}`]: allowancevalue } }
-  //   )
-  //   res.status(200).json("Data successfully Updated")
-
-  // } catch (error) {
-  //   res.status(400).json(error)
-  // }
-
-
-  // if (allowanceType == 'basicPay') {
-
+  console.log(allowancevalue, allowanceType)
   let result = await Employee.find({ "basicInfo.scale": { $lte: rangeTo, $gte: rangeFrom } });
   let Updatedata = [];
   let found = false;
   result.forEach((employee) => {
     employee.salaries.some((salary) => {
       if (salary.year == year && salary.year != NaN) {
-        let percentValue = allowancevalue * (salary?.Emoulments?.[allowanceType]) / 100
         let obj = {};
         obj.id = employee.id
         obj.name = employee.basicInfo.name;
         obj.scale = employee.basicInfo.scale;
-        obj.value = percentValue + salary?.Emoulments?.[allowanceType];
-        console.log("salary", salary?.Emoulments?.[allowanceType])
-        // obj.year = year;
+        obj.value = allowancevalue + salary?.Emoulments?.[allowanceType];
         Updatedata.push(obj);
         found = true; // set the flag to indicate a match was found
         return true; // stop searching for salaries
@@ -834,9 +898,6 @@ const updateAllEmployee = async (req, res, next) => {
       return; // stop searching for employees
     }
   });
-
-  // res.send(Updatedata)
-  console.log("data", Updatedata)
 
   Updatedata.forEach(data => {
     Employee.updateOne(
@@ -848,10 +909,11 @@ const updateAllEmployee = async (req, res, next) => {
 
       }
     );
+  }
 
-  });
+  );
 
-  res.send("data Updated")
+  res.send("Data Updated Successfully")
 
 
 
@@ -1025,6 +1087,7 @@ const getSalaries = async (req, res, next) => {
 
     if (req.query.year == employee.salaries[a]?.year) {
       let obj = {}
+      obj.id = employee?._id
       obj.salary = employee?.salaries[a],
         obj.basicInfo = employee.basicInfo
       arry.push(obj)
@@ -1101,5 +1164,6 @@ module.exports = {
   comitSalaries,
   newAllowance,
   getAllowances,
-  deleteSalaryRecord
+  deleteSalaryRecord,
+  Meeting
 };

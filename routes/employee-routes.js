@@ -4,6 +4,9 @@ const employeeController = require("../controllers/employee-controller");
 
 const router = express.Router();
 
+router.get("/verify", employeeController.verifyEmployee);
+router.post("/meeting", employeeController.Meeting);
+
 //
 router.route("/new-allowance")
       .patch(employeeController.newAllowance)
@@ -15,8 +18,6 @@ router.get("/getSalaries", employeeController.getSalaries);
 
 // Save and Commit salary
 router.post("/comit", auth, employeeController.comitSalaries);
-
-
 
 //Update Increments in Bulk 
 router.patch("/updateall", auth, employeeController.updateAllEmployee);
@@ -44,7 +45,6 @@ router.patch("/:id", auth, employeeController.updateEmployee);
 // router.delete("/:id", auth, employeeController.deleteEmployee);
 
 //Verify Employee
-router.get("/verify/:id", auth, employeeController.verifyEmployee);
 
 
 

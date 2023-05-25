@@ -19,13 +19,12 @@ const employeeSchema = new mongoose.Schema({
     stg: { type: Number, required: true },
     increment: { type: Number, required: true },
     initialpay: { type: Number, required: true },
-
   },
 
   salaries: [],
   currentPay: {
     date: { type: String, required: true },
-    verified: { type: Boolean, required: true },
+    verified: { type: String, required: false },
     amolument: {
       basicPay: { type: Number, required: true },
       nonPracticingAllowance: { type: Number, required: false },
@@ -43,8 +42,6 @@ const employeeSchema = new mongoose.Schema({
       chairmanAllowance: { type: Number, required: false },
       rTWardenAllowance: { type: Number, required: false },
       specialReliefAllowance: { type: Number, required: false },
-
-
       conveyanceAllowance: { type: Number, required: false },
       darenessAllowance: { type: Number, required: false },
       adhocReliefAllowance: { type: Number, required: false },
@@ -63,23 +60,13 @@ const employeeSchema = new mongoose.Schema({
       waterCharges: { type: Number, required: false },
       shortDays: { type: Number, required: false },
       convRecovery: { type: Number, required: false },
-      // -  uniTTAllowance: { type: Number, required: false },
       tSAFund: { type: Number, required: false },
       benevolentFund: { type: Number, required: false },
       groupInsurance: { type: Number, required: false },
       eidAdvance: { type: Number, required: false },
       busCharges: { type: Number, required: false },
-      //speciialIncentive: { type: Number, required: false },
-      //conveyanceAllowance: { type: Number, required: false },
-      //  integratedAllowance: { type: Number, required: false },
-      // disableAllowance: { type: Number, required: false },
-      //  sSB: { type: Number, required: false },
       gIP: { type: Number, required: false },
-      //  recEidAdvance: { type: Number, required: false },
       accomadationCharges: { type: Number, required: false },
-
-
-
       carScooterAdvance: { type: Number, required: false },
       electricityCharges: { type: Number, required: false },
       extraCausalLeaves: { type: Number, required: false },
